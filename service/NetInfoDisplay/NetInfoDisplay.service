@@ -1,0 +1,13 @@
+Description=NetInfoDisplay(ODROID 16x2 LCD Shield)
+After=syslog.target
+
+[Service]
+Type=simple
+User=odroid
+WorkingDirectory=/home/odroid/linux.work/service/NetInfoDisplay
+ExecStart=/usr/bin/screen -L -DmS NetInfoDisplay ./NetInfoDisplay.sh
+
+[Install]
+WantedBy=multi-user.target
+#WantedBy=default.target
+
