@@ -104,8 +104,19 @@ const int ledPorts[] = {
 
 #define MAX_LED_CNT sizeof(ledPorts) / sizeof(ledPorts[0])
 
+static int dispMode = 0;
+//------------------------------------------------------------------------------------------------------------
+#if 0
+void isrButton1(void)
+{
+	dispMode = 0;
+}
 
-static int dispMode = 1;
+void isrButton2(void)
+{
+	dispMode = 1;
+}
+#endif
 //------------------------------------------------------------------------------------------------------------
 int getEthInfo(const unsigned char *eth_name)
 {
@@ -129,7 +140,7 @@ int getEthInfo(const unsigned char *eth_name)
 	} else { 
 		memset(ipstr, 0x00, sizeof(ipstr));
 		inet_ntop(AF_INET, ifr.ifr_addr.sa_data+2, ipstr, sizeof(struct sockaddr)); 
-		sprintf(&lcdFb[0][0], "IP %s", ipstr);
+		lcdFb[0][sprintf(&lcdFb[0][0], "IP %s", ipstr)] = ' ';
 		fprintf(stdout, "myOwn IP Address is %s\n", ipstr); 
 	}
 
@@ -228,6 +239,17 @@ int system_init(void)
 		digitalWrite(ledPorts[i], 0);
 	}
 
+#if 0
+	if (wiringPiISR (PORT_BUTTON1, INT_EDGE_FALLING, &isrButton1) < 0) {
+		fprintf(stderr, "Unable to setup ISR1: %s\n", strerror(errno));
+		return -1;
+	}
+
+	if (wiringPiISR (PORT_BUTTON2, INT_EDGE_FALLING, &isrButton2) < 0) {
+		fprintf(stderr, "Unable to setup ISR2: %s\n", strerror(errno));
+		return -1;
+	}
+#endif
 	return  0;
 }
  
@@ -253,7 +275,7 @@ int main (int argc, char *argv[])
 		// lcd update
 		lcd_update();
 
-		if 		(!digitalRead (PORT_BUTTON1))	dispMode = 0;
+		if		(!digitalRead (PORT_BUTTON1))	dispMode = 0;
 		else if (!digitalRead (PORT_BUTTON2))	dispMode = 1;
 	}
  
