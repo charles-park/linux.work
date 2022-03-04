@@ -49,7 +49,7 @@ async def write_mac(mac):
 
 
 async def read_uuid():
-    with open('/sys/class/efuse/uuid', 'r') as f:
+    with open('/sys/class/efuse/uuid', 'r', errors='ignore') as f:
         try:
             uuid = f.readline().rstrip().replace('\x00', '')
             return uuid
