@@ -15,3 +15,5 @@ ssh로 접속시에는 아래의 에러가 발생됨
 setterm: terminal xterm-256color does not support --blank
 setterm: cannot (un)set powersave mode: Inappropriate ioctl for device
 
+에러 발생을 없애기 위하여 아래와 같이 진행함.
+setterm -blank 0 -powersave off 2>/dev/null
