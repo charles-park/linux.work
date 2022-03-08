@@ -124,7 +124,11 @@ static int adcValue2 = 0;
 #define SERIAL_BAUDRATE	115200
 
 // GPIOX.BIT12(TXD1), GPIOX.BIT13(RXD1)
-const char *serialHandleNode = "/dev/ttyS0";
+// ODROID-M1
+// const char *serialHandleNode = "/dev/ttyS0";
+
+// ODROID-C4
+const char *serialHandleNode = "/dev/ttyS1";
 
 static int  serialHandle = 0;
 
@@ -179,9 +183,9 @@ static void lcd_update (void)
 	int i, j;
 
 	sprintf(&lcdFb[0][0], "%4d %02X %s %s",
-		adcValue1, i2cValue1[i2cPos] & 0xFFFF, (btStatus1 == 0) ? "DN":"UP", totalMemSize > 4000 ? "-8GB-":"-4GB-");
+		adcValue1, i2cValue1[i2cPos] & 0xFF, (btStatus1 == 0) ? "DN":"UP", totalMemSize > 4000 ? "-8GB-":"-4GB-");
 	sprintf(&lcdFb[1][0], "%4d %02X %s T%c-R%c",
-		adcValue2, i2cValue2[i2cPos] & 0xFFFF, (btStatus2 == 0) ? "DN":"UP", txChar, rxChar);
+		adcValue2, i2cValue2[i2cPos] & 0xFF, (btStatus2 == 0) ? "DN":"UP", txChar, rxChar);
 
 	for (i = 0; i < LCD_ROW; i++) {
 		lcdPosition (lcdHandle, 0, i);
@@ -293,7 +297,6 @@ void boardGetData(void)
 	i2cValue1[i2cPos] = wiringPiI2CReadReg8 (i2cHandle1[i2cPos], i2cRegChipID[i2cPos]);
 	i2cValue2[i2cPos] = wiringPiI2CReadReg8 (i2cHandle2[i2cPos], i2cRegChipID[i2cPos]);
 
-	
 	// serial tx set
 	if(++txChar >= 'z')   txChar = 'a';
 	serialPutchar(serialHandle, txChar);
