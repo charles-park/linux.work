@@ -16,11 +16,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <sys/sysinfo.h>
 
-#include <wiringpi2/wiringPi.h>
-#include <wiringpi2/wiringPiI2C.h>
-#include <wiringpi2/wiringSerial.h>
-#include <wiringpi2/lcd.h>
+#include <wiringPi.h>
+#include <wiringPiI2C.h>
+#include <wiringSerial.h>
+#include <lcd.h>
 
 #ifndef	TRUE
 #  define	TRUE	(1==1)
@@ -130,6 +131,7 @@ static int  serialHandle = 0;
 static unsigned char rxChar = 0;
 static unsigned char txChar = 'a';
 
+static unsigned long totalMemSize = 0;
 //------------------------------------------------------------------------------------------------------------
 //
 // LED:
@@ -176,10 +178,10 @@ static void lcd_update (void)
 {
 	int i, j;
 
-	sprintf(&lcdFb[0][0], "%4d %04X %s T-%c", 
-		adcValue1, i2cValue1[i2cPos] & 0xFFFF, (btStatus1 == 0) ? "DN":"UP", txChar);
-	sprintf(&lcdFb[1][0], "%4d %04X %s R-%c", 
-		adcValue2, i2cValue2[i2cPos] & 0xFFFF, (btStatus2 == 0) ? "DN":"UP", rxChar);
+	sprintf(&lcdFb[0][0], "%4d %02X %s %s",
+		adcValue1, i2cValue1[i2cPos] & 0xFFFF, (btStatus1 == 0) ? "DN":"UP", totalMemSize > 4000 ? "-8GB-":"-4GB-");
+	sprintf(&lcdFb[1][0], "%4d %02X %s T%c-R%c",
+		adcValue2, i2cValue2[i2cPos] & 0xFFFF, (btStatus2 == 0) ? "DN":"UP", txChar, rxChar);
 
 	for (i = 0; i < LCD_ROW; i++) {
 		lcdPosition (lcdHandle, 0, i);
@@ -311,6 +313,19 @@ void boardGetData(void)
 }
 
 //------------------------------------------------------------------------------------------------------------
+unsigned long getTotalMemorySize(void)
+{
+	struct sysinfo info;
+	sysinfo(&info);
+	fprintf(stdout, "uptime     : %ld\n", info.uptime);
+	fprintf(stdout, "total ram  : %ld\n", info.totalram);
+	fprintf(stdout, "free ram   : %ld\n", info.freeram);
+	fprintf(stdout, "shared ram : %ld\n", info.sharedram);
+	fprintf(stdout, "buffer ram : %ld\n", info.bufferram);
+	fprintf(stdout, "free swap  : %ld\n", info.freeswap);
+	return info.totalram;
+}
+//------------------------------------------------------------------------------------------------------------
 //
 // Start Program
 //
@@ -326,6 +341,8 @@ int main (int argc, char *argv[])
 		fprintf (stderr, "%s: System Init failed\n", __func__);
 		return -1;
 	}
+
+	totalMemSize = getTotalMemorySize() / (1024*1024);
 
 	for(;;) {
 		if (millis () < timer)
